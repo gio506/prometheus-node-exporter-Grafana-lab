@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'Infrastructure Health'
+    orgId: 1
+    folder: 'Local Monitoring Lab'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards
