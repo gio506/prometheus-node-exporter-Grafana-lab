@@ -8,6 +8,9 @@ on:
 jobs:
   compose-validate:
     runs-on: ubuntu-latest
+    env:
+      GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+      GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - name: Validate docker compose
@@ -15,6 +18,11 @@ jobs:
 
   stack-up:
     runs-on: ubuntu-latest
+    env:
+      GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+      GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+      GRAFANA_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+      GRAFANA_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
     needs: compose-validate
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +36,11 @@ jobs:
 
   health-check:
     runs-on: ubuntu-latest
+    env:
+      GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+      GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+      GRAFANA_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+      GRAFANA_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
     needs: stack-up
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +51,9 @@ jobs:
 
   lint-config:
     runs-on: ubuntu-latest
+    env:
+      GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+      GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
     needs: health-check
     steps:
       - uses: actions/checkout@v4
