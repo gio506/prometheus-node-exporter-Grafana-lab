@@ -23,6 +23,9 @@ docker compose logs -f
 # Run smoke checks against endpoints
 ./scripts/smoke.sh
 
+# Retry tuning for slower boots
+SMOKE_RETRIES=30 SMOKE_SLEEP_SECONDS=2 ./scripts/smoke.sh
+
 # Stop everything
 docker compose down
 ```
@@ -32,13 +35,15 @@ docker compose down
 - Prometheus UI: http://localhost:9090
 - Node Exporter metrics: http://localhost:9100/metrics
 - Grafana UI: http://localhost:3000
-  - username: `admin`
-  - password: `admin`
+  - username: `admin` (or `$GRAFANA_ADMIN_USER`)
+  - password: `admin` (or `$GRAFANA_ADMIN_PASSWORD`)
 
 ## 4) What each directory/file is for
 
+- `.env.example`
+  - Optional environment overrides for Grafana credentials and smoke test retry settings.
 - `docker-compose.yml`
-  - Defines the three containers, ports, and mounted config/provisioning paths.
+  - Defines the three containers, ports, mounted config/provisioning paths, and persistent named volumes.
 - `prometheus/prometheus.yml`
   - Prometheus scrape config for itself and node-exporter.
 - `grafana/provisioning/datasources/datasource.yml`
