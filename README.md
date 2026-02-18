@@ -42,6 +42,8 @@ cp .env.example .env
 
 Docker Compose will automatically load values from `.env` in the project root.
 
+> For local usage, set your own Grafana username and use a **strong password** (do not keep default `admin/admin`).
+
 ## Start the lab
 
 ```bash

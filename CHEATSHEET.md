@@ -37,6 +37,7 @@ docker compose down
 - Grafana UI: http://localhost:3000
   - username: `admin` (or `$GRAFANA_ADMIN_USER`)
   - password: `admin` (or `$GRAFANA_ADMIN_PASSWORD`)
+  - local best practice: define your own username and a **strong password** in `.env`
 
 ## 4) What each directory/file is for
 
