@@ -105,7 +105,7 @@ docker compose config >/dev/null
 
 # Validate Prometheus config format inside official container
 docker run --rm -v "$PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
-  prom/prometheus:v2.54.1 promtool check config /etc/prometheus/prometheus.yml
+  --entrypoint=promtool prom/prometheus:v2.54.1 check config /etc/prometheus/prometheus.yml
 
 # Validate dashboard JSON
 jq . grafana/dashboards/infrastructure-health.json >/dev/null
