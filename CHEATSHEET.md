@@ -39,6 +39,14 @@ docker compose down
   - password: `admin` (or `$GRAFANA_ADMIN_PASSWORD`)
   - local best practice: define your own username and a **strong password** in `.env`
 
+## 3.1) GitHub Actions credentials source
+
+For CI, set these in GitHub (Environment or Repository settings):
+- Variable: `GRAFANA_ADMIN_USER`
+- Secret: `GRAFANA_ADMIN_PASSWORD`
+
+Workflow jobs inject these values into Docker Compose and smoke checks.
+
 ## 4) What each directory/file is for
 
 - `.env.example`

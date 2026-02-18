@@ -88,6 +88,14 @@ What it verifies:
 - Node Exporter metrics endpoint (`/metrics`)
 - Grafana API health endpoint (`/api/health`)
 
+## GitHub environment variables/secrets
+
+For GitHub Actions, configure:
+- Repository/Environment **variable**: `GRAFANA_ADMIN_USER`
+- Repository/Environment **secret**: `GRAFANA_ADMIN_PASSWORD`
+
+The pipeline passes these into Docker Compose so Grafana admin credentials come from GitHub environment configuration.
+
 ## CI pipeline (4 stages, ready to use)
 
 Pipeline is defined in `.github/workflows/pipeline.yml` and includes:
