@@ -12,8 +12,9 @@ Intermediate monitoring lab to observe local infrastructure metrics quickly usin
 
 ```text
 .
-├── docker-compose.yml                             # Runs Prometheus, Node Exporter, Grafana
+├── docker-compose.yml                             # Runs Prometheus, Node Exporter, Grafana (+ persistent volumes)
 ├── README.md                                      # Lab setup + usage guide
+├── .env.example                                   # Optional env overrides for Grafana + smoke tuning
 ├── CHEATSHEET.md                                  # Fast commands + troubleshooting + query references
 ├── prometheus/
 │   └── prometheus.yml                             # Prometheus scrape configuration
@@ -32,6 +33,15 @@ Intermediate monitoring lab to observe local infrastructure metrics quickly usin
         └── pipeline.yml                           # 4-stage ready CI pipeline
 ```
 
+## Optional environment overrides
+
+```bash
+cp .env.example .env
+# edit values if needed
+```
+
+Docker Compose will automatically load values from `.env` in the project root.
+
 ## Start the lab
 
 ```bash
@@ -43,8 +53,8 @@ docker compose up -d
 - Prometheus: http://localhost:9090
 - Node Exporter metrics: http://localhost:9100/metrics
 - Grafana: http://localhost:3000
-  - Username: `admin`
-  - Password: `admin`
+  - Username: `admin` (or `$GRAFANA_ADMIN_USER`)
+  - Password: `admin` (or `$GRAFANA_ADMIN_PASSWORD`)
 
 ## Dashboard provisioning / import
 
@@ -63,6 +73,12 @@ Run endpoint checks:
 
 ```bash
 ./scripts/smoke.sh
+```
+
+Optional tuning for slower environments:
+
+```bash
+SMOKE_RETRIES=30 SMOKE_SLEEP_SECONDS=2 ./scripts/smoke.sh
 ```
 
 What it verifies:
