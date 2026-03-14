@@ -16,6 +16,33 @@ jobs:
       - name: Validate docker compose
         run: docker compose config >/dev/null
 
+  lint-config:
+    name: Stage 2 - Config lint
+    runs-on: ubuntu-latest
+    env:
+      GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+      GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+    needs: compose-validate
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check script syntax
+        run: bash -n scripts/smoke.sh
+      - name: Check dashboard JSON syntax
+        run: docker run --rm -v "$PWD:/workspace" imega/jq:1.7 . /workspace/grafana/dashboards/infrastructure-health.json >/dev/null
+      - name: Check Prometheus config using promtool
+        run: |
+          docker run --rm \
+            -v "$PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
+            -v "$PWD/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro" \
+            --entrypoint=promtool prom/prometheus:v2.54.1 \
+            check config /etc/prometheus/prometheus.yml
+      - name: Check alert rules using promtool
+        run: |
+          docker run --rm \
+            -v "$PWD/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro" \
+            --entrypoint=promtool prom/prometheus:v2.54.1 \
+            check rules /etc/prometheus/alerts.yml
+
   stack-up:
     name: Stage 3 - Stack up
     runs-on: ubuntu-latest
@@ -24,7 +51,7 @@ jobs:
       GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
       GRAFANA_USER: ${{ vars.GRAFANA_ADMIN_USER }}
       GRAFANA_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
-    needs: compose-validate
+    needs: lint-config
     steps:
       - uses: actions/checkout@v4
       - name: Start monitoring stack
@@ -51,33 +78,6 @@ jobs:
       - name: Run smoke checks
         run: ./scripts/smoke.sh
 
-  lint-config:
-    name: Stage 2 - Config lint
-    runs-on: ubuntu-latest
-    env:
-      GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER }}
-      GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
-    needs: health-check
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check script syntax
-        run: bash -n scripts/smoke.sh
-      - name: Check dashboard JSON syntax
-        run: jq . grafana/dashboards/infrastructure-health.json >/dev/null
-      - name: Check Prometheus config using promtool
-        run: |
-          docker run --rm \
-            -v "$PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
-            -v "$PWD/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro" \
-            --entrypoint=promtool prom/prometheus:v2.54.1 \
-            check config /etc/prometheus/prometheus.yml
-      - name: Check alert rules using promtool
-        run: |
-          docker run --rm \
-            -v "$PWD/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro" \
-            --entrypoint=promtool prom/prometheus:v2.54.1 \
-            check rules /etc/prometheus/alerts.yml
-
   alert-verify:
     name: Stage 5 - Alert rule verify
     runs-on: ubuntu-latest
@@ -95,3 +95,6 @@ jobs:
         run: |
           curl --fail --silent http://localhost:9090/api/v1/rules | tee rules.json
           grep -q "NodeExporterDown" rules.json
+      - name: Teardown
+        if: always()
+        run: docker compose down -v
