@@ -7,6 +7,7 @@ Intermediate monitoring lab to observe local infrastructure metrics quickly usin
 - **Prometheus** for metrics collection and querying.
 - **Node Exporter** for host-level metrics.
 - **Grafana** for dashboard visualization (auto-provisioned).
+- **Alert rules** for a basic target-down signal.
 
 ## Project tree (with short explanation)
 
@@ -17,7 +18,8 @@ Intermediate monitoring lab to observe local infrastructure metrics quickly usin
 ├── .env.example                                   # Optional env overrides for Grafana + smoke tuning
 ├── CHEATSHEET.md                                  # Fast commands + troubleshooting + query references
 ├── prometheus/
-│   └── prometheus.yml                             # Prometheus scrape configuration
+│   ├── alerts.yml                                 # Basic alert rules for the lab
+│   └── prometheus.yml                             # Prometheus scrape and rule configuration
 ├── grafana/
 │   ├── dashboards/
 │   │   └── infrastructure-health.json             # Infrastructure Health dashboard JSON
@@ -28,9 +30,10 @@ Intermediate monitoring lab to observe local infrastructure metrics quickly usin
 │           └── dashboard.yml                      # Auto-load dashboards from mounted folder
 ├── scripts/
 │   └── smoke.sh                                   # Endpoint smoke checks with curl
+├── FILES_EXPLAINED.md                             # File-by-file purpose map
 └── .github/
     └── workflows/
-        └── pipeline.yml                           # 4-stage ready CI pipeline
+        └── pipeline.yml                           # 5-stage ready CI pipeline
 ```
 
 ## Optional environment overrides
@@ -88,6 +91,11 @@ What it verifies:
 - Node Exporter metrics endpoint (`/metrics`)
 - Grafana API health endpoint (`/api/health`)
 
+## Built-in alert
+
+The lab ships with one simple rule:
+- `NodeExporterDown`: fires when Prometheus sees `up{job="node_exporter"} == 0` for one minute.
+
 ## GitHub environment variables/secrets
 
 For GitHub Actions, configure:
@@ -100,9 +108,10 @@ The pipeline passes these into Docker Compose so Grafana admin credentials come 
 
 Pipeline is defined in `.github/workflows/pipeline.yml` and includes:
 1. **compose-validate**: `docker compose config`.
-2. **stack-up**: start services and wait for boot.
-3. **health-check**: run `scripts/smoke.sh`.
-4. **lint-config**: validate Prometheus config + dashboard JSON + script syntax.
+2. **lint-config**: validate Prometheus config, alert rules, dashboard JSON, and script syntax.
+3. **stack-up**: start services and wait for boot.
+4. **health-check**: run `scripts/smoke.sh`.
+5. **alert-verify**: confirm the `NodeExporterDown` rule is loaded.
 
 ## Stop the lab
 
