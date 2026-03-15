@@ -28,7 +28,7 @@ jobs:
       - name: Check script syntax
         run: bash -n scripts/smoke.sh
       - name: Check dashboard JSON syntax
-        run: docker run --rm -v "$PWD:/workspace" imega/jq:1.7 . /workspace/grafana/dashboards/infrastructure-health.json >/dev/null
+        run: python -m json.tool grafana/dashboards/infrastructure-health.json >/dev/null
       - name: Check Prometheus config using promtool
         run: |
           docker run --rm \
